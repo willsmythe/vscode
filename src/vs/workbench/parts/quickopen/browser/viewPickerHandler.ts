@@ -104,7 +104,11 @@ export class ViewPickerHandler extends QuickOpenHandler {
 		});
 
 		const entryToCategory = {};
-		entries.forEach(e => entryToCategory[e.getLabel()] = e.getCategory());
+		entries.forEach(e => {
+			if (!entryToCategory[e.getLabel()]) {
+				entryToCategory[e.getLabel()] = e.getCategory();
+			}
+		});
 
 		let lastCategory: string;
 		entries.forEach((e, index) => {
