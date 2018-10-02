@@ -32,8 +32,10 @@ import { localize } from 'vs/nls';
 import { IDisposable } from 'vs/base/common/lifecycle';
 import { RawContextKey, IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 
-const ActivePanleContextId = 'activePanel';
-export const ActivePanelContext = new RawContextKey<string>(ActivePanleContextId, '');
+const ActivePanelContextId = 'activePanel';
+const PanelFocusContextId = 'panelFocus';
+export const ActivePanelContext = new RawContextKey<string>(ActivePanelContextId, '');
+export const PanelFocusContext = new RawContextKey<boolean>(PanelFocusContextId, false);
 
 export class PanelPart extends CompositePart<Panel> implements IPanelService {
 
@@ -45,6 +47,7 @@ export class PanelPart extends CompositePart<Panel> implements IPanelService {
 	_serviceBrand: any;
 
 	private activePanelContextKey: IContextKey<string>;
+	private panelFocusContextKey: IContextKey<boolean>;
 	private blockOpeningPanel: boolean;
 	private compositeBar: CompositeBar;
 	private compositeActions: { [compositeId: string]: { activityAction: PanelActivityAction, pinnedAction: ToggleCompositePinnedAction } } = Object.create(null);
@@ -114,6 +117,7 @@ export class PanelPart extends CompositePart<Panel> implements IPanelService {
 		}
 
 		this.activePanelContextKey = ActivePanelContext.bindTo(contextKeyService);
+		this.panelFocusContextKey = PanelFocusContext.bindTo(contextKeyService);
 
 		this.registerListeners();
 	}
@@ -144,6 +148,7 @@ export class PanelPart extends CompositePart<Panel> implements IPanelService {
 		if (this.activePanelContextKey.get() === id) {
 			this.activePanelContextKey.reset();
 		}
+		this.panelFocusContextKey.set(false);
 	}
 
 	get onDidPanelOpen(): Event<IPanel> {
@@ -181,7 +186,10 @@ export class PanelPart extends CompositePart<Panel> implements IPanelService {
 			}
 		}
 
-		return promise.then(() => this.openComposite(id, focus));
+		return promise.then(() => {
+			this.panelFocusContextKey.set(focus);
+			return this.openComposite(id, focus);
+		});
 	}
 
 	showActivity(panelId: string, badge: IBadge, clazz?: string): IDisposable {
