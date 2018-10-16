@@ -693,6 +693,7 @@ export class TerminalTaskSystem implements ITaskSystem {
 				delete this.terminals[terminalKey];
 				delete this.sameTaskTerminals[terminalData.lastTask];
 				this.idleTaskTerminals.delete(terminalData.lastTask);
+				delete this.activeTasks[Task.getMapKey(task)];
 			}
 		});
 		this.terminals[terminalKey] = { terminal: result, lastTask: taskKey };
